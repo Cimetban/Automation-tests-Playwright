@@ -10,10 +10,7 @@ class ReturnPage {
   }
 
   async goto() {
-    const path = require('path');
-    const p = path.resolve(__dirname, '..', '..', 'returns.html');
-    const url = 'file://' + p.replace(/\\/g, '/');
-    await this.page.goto(url);
+    await this.page.goto('/returns.html');
   }
 
   async fillReturnForm(orderId, reason, comments = '') {
@@ -43,7 +40,11 @@ class ReturnPage {
   }
 
   async getStoredReturns() {
-    return await this.page.evaluate(() => JSON.parse(localStorage.getItem('shopEaseReturns') || '[]'));
+    return await this.page.evaluate(async () => {
+      const response = await fetch('/api/returns');
+      const data = await response.json();
+      return data.returns;
+    });
   }
 }
 

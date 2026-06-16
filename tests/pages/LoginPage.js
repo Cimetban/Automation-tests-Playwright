@@ -8,10 +8,7 @@ class LoginPage {
   }
 
   async goto() {
-    const path = require('path');
-    const p = path.resolve(__dirname, '..', '..', 'login.html');
-    const url = 'file://' + p.replace(/\\/g, '/');
-    await this.page.goto(url);
+    await this.page.goto('/login.html');
   }
 
   async fillEmail(email) {

@@ -8,10 +8,7 @@ class IndexPage {
   }
 
   async goto() {
-    const path = require('path');
-    const p = path.resolve(__dirname, '..', '..', 'index.html');
-    const url = 'file://' + p.replace(/\\/g, '/');
-    await this.page.goto(url);
+    await this.page.goto('/index.html');
   }
 
   async addFirstProductToCart() {

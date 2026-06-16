@@ -1,8 +1,8 @@
+import { fetchReturns, submitReturn, deleteReturn } from './client-api.js';
+
 const returnForm = document.getElementById('return-form');
 const returnMessage = document.getElementById('return-message');
 const returnHistory = document.getElementById('return-history');
-
-const RETURNS_KEY = 'shopEaseReturns';
 
 function formatDate(date) {
   return new Date(date).toLocaleDateString('en-US', {
@@ -12,9 +12,15 @@ function formatDate(date) {
   });
 }
 
-function loadReturns() {
-  const returns = JSON.parse(localStorage.getItem(RETURNS_KEY) || '[]');
-  renderReturns(returns);
+async function loadReturns() {
+  returnHistory.innerHTML = '';
+
+  try {
+    const response = await fetchReturns();
+    renderReturns(response.returns || []);
+  } catch (error) {
+    returnHistory.innerHTML = '<p class="empty-message">Unable to load return history. Please try again later.</p>';
+  }
 }
 
 function renderReturns(returns) {
@@ -25,25 +31,25 @@ function renderReturns(returns) {
     return;
   }
 
-  returns.forEach((item, index) => {
+  returns.forEach((item) => {
     const row = document.createElement('div');
     row.className = 'return-item';
     row.innerHTML = `
       <div class="return-info">
         <h3>Order ${item.orderId}</h3>
         <p><strong>Reason:</strong> ${item.reason}</p>
-        <p><strong>Submitted:</strong> ${item.date}</p>
+        <p><strong>Submitted:</strong> ${formatDate(item.date)}</p>
         <p><strong>Status:</strong> <span class="status ${item.status}">${item.status}</span></p>
       </div>
       <div class="return-actions">
-        <button class="button button-secondary remove-return" data-index="${index}">Remove</button>
+        <button class="button button-secondary remove-return" data-order-id="${item.orderId}">Remove</button>
       </div>
     `;
     returnHistory.appendChild(row);
   });
 }
 
-returnForm.addEventListener('submit', (event) => {
+returnForm.addEventListener('submit', async (event) => {
   event.preventDefault();
 
   const orderId = returnForm.orderId.value.trim();
@@ -56,34 +62,30 @@ returnForm.addEventListener('submit', (event) => {
     return;
   }
 
-  const returns = JSON.parse(localStorage.getItem(RETURNS_KEY) || '[]');
-  const newReturn = {
-    orderId,
-    reason,
-    comments,
-    date: formatDate(new Date()),
-    status: 'pending',
-  };
-
-  returns.push(newReturn);
-  localStorage.setItem(RETURNS_KEY, JSON.stringify(returns));
-
-  returnMessage.textContent = `Return request for ${orderId} submitted successfully. We will process it shortly.`;
-  returnMessage.className = 'form-message success';
-
-  returnForm.reset();
-  loadReturns();
+  try {
+    const response = await submitReturn(orderId, reason, comments);
+    returnMessage.textContent = response.message || `Return request for ${orderId} submitted successfully. We will process it shortly.`;
+    returnMessage.className = 'form-message success';
+    returnForm.reset();
+    await loadReturns();
+  } catch (error) {
+    returnMessage.textContent = error.message;
+    returnMessage.className = 'form-message error';
+  }
 });
 
-returnHistory.addEventListener('click', (event) => {
+returnHistory.addEventListener('click', async (event) => {
   const button = event.target.closest('.remove-return');
   if (!button) return;
 
-  const index = Number(button.dataset.index);
-  const returns = JSON.parse(localStorage.getItem(RETURNS_KEY) || '[]');
-  returns.splice(index, 1);
-  localStorage.setItem(RETURNS_KEY, JSON.stringify(returns));
-  loadReturns();
+  const orderId = button.dataset.orderId;
+  try {
+    await deleteReturn(orderId);
+    await loadReturns();
+  } catch (error) {
+    returnMessage.textContent = error.message;
+    returnMessage.className = 'form-message error';
+  }
 });
 
 loadReturns();

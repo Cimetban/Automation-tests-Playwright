@@ -11,10 +11,7 @@ class PaymentPage {
   }
 
   async goto() {
-    const path = require('path');
-    const p = path.resolve(__dirname, '..', '..', 'payment.html');
-    const url = 'file://' + p.replace(/\\/g, '/');
-    await this.page.goto(url);
+    await this.page.goto('/payment.html');
   }
 
   async fillPaymentForm(fullName, cardNumber, expiryDate, cvv, billingAddress) {
@@ -35,7 +32,11 @@ class PaymentPage {
   }
 
   async getStoredCart() {
-    return await this.page.evaluate(() => localStorage.getItem('shopEaseCart'));
+    return await this.page.evaluate(async () => {
+      const response = await fetch('/api/cart');
+      const data = await response.json();
+      return data.cart && data.cart.length > 0 ? data.cart : null;
+    });
   }
 
   async submitPaymentForm(fullName, cardNumber, expiryDate, cvv, billingAddress) {

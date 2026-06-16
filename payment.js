@@ -1,9 +1,9 @@
+import { fetchCart, checkout } from './client-api.js';
+
 const paymentForm = document.getElementById('payment-form');
 const paymentMessage = document.getElementById('payment-message');
 const paymentSummary = document.getElementById('payment-summary');
 const submitPayment = document.getElementById('submit-payment');
-
-const CART_KEY = 'shopEaseCart';
 
 function formatCurrency(value) {
   return value.toLocaleString('en-US', {
@@ -12,45 +12,48 @@ function formatCurrency(value) {
   });
 }
 
-function getCartItems() {
-  return JSON.parse(localStorage.getItem(CART_KEY) || '[]');
-}
-
-function renderSummary() {
-  const cartItems = getCartItems();
+async function renderSummary() {
   paymentSummary.innerHTML = '';
+  submitPayment.disabled = true;
 
-  if (cartItems.length === 0) {
-    paymentSummary.innerHTML = '<p class="empty-message">Your cart is empty. Add items on the homepage first.</p>';
-    submitPayment.disabled = true;
-    return;
-  }
+  try {
+    const response = await fetchCart();
+    const cartItems = response.cart || [];
 
-  let total = 0;
+    if (cartItems.length === 0) {
+      paymentSummary.innerHTML = '<p class="empty-message">Your cart is empty. Add items on the homepage first.</p>';
+      return;
+    }
 
-  cartItems.forEach((item) => {
-    const amount = item.product.price * item.quantity;
-    total += amount;
+    let total = 0;
 
-    const row = document.createElement('div');
-    row.className = 'payment-item';
-    row.innerHTML = `
-      <span>${item.product.name} × ${item.quantity}</span>
-      <strong>${formatCurrency(amount)}</strong>
+    cartItems.forEach((item) => {
+      const amount = item.product.price * item.quantity;
+      total += amount;
+
+      const row = document.createElement('div');
+      row.className = 'payment-item';
+      row.innerHTML = `
+        <span>${item.product.name} × ${item.quantity}</span>
+        <strong>${formatCurrency(amount)}</strong>
+      `;
+      paymentSummary.appendChild(row);
+    });
+
+    const totalRow = document.createElement('div');
+    totalRow.className = 'payment-total';
+    totalRow.innerHTML = `
+      <span>Order total</span>
+      <strong>${formatCurrency(total)}</strong>
     `;
-    paymentSummary.appendChild(row);
-  });
-
-  const totalRow = document.createElement('div');
-  totalRow.className = 'payment-total';
-  totalRow.innerHTML = `
-    <span>Order total</span>
-    <strong>${formatCurrency(total)}</strong>
-  `;
-  paymentSummary.appendChild(totalRow);
+    paymentSummary.appendChild(totalRow);
+    submitPayment.disabled = false;
+  } catch (error) {
+    paymentSummary.innerHTML = '<p class="empty-message">Unable to load cart. Please try again later.</p>';
+  }
 }
 
-paymentForm.addEventListener('submit', (event) => {
+paymentForm.addEventListener('submit', async (event) => {
   event.preventDefault();
 
   if (!paymentForm.checkValidity()) {
@@ -62,6 +65,8 @@ paymentForm.addEventListener('submit', (event) => {
   const cvv = paymentForm.cvv.value.trim();
   const cardNumber = paymentForm.cardNumber.value.replace(/\s+/g, '');
   const expiryDate = paymentForm.expiryDate.value.trim();
+  const billingAddress = paymentForm.billingAddress.value.trim();
+  const fullName = paymentForm.fullName.value.trim();
 
   if (cardNumber.length < 12 || cardNumber.length > 19) {
     paymentMessage.textContent = 'Enter a valid card number.';
@@ -81,14 +86,26 @@ paymentForm.addEventListener('submit', (event) => {
     return;
   }
 
-  localStorage.removeItem(CART_KEY);
-  paymentMessage.textContent = 'Payment successful! Thank you for your purchase.';
-  paymentMessage.className = 'form-message success';
-  submitPayment.disabled = true;
+  try {
+    const response = await checkout({
+      fullName,
+      cardNumber,
+      expiryDate,
+      cvv,
+      billingAddress,
+    });
 
-  setTimeout(() => {
-    window.location.href = 'index.html';
-  }, 1500);
+    paymentMessage.textContent = response.message || 'Payment successful! Thank you for your purchase.';
+    paymentMessage.className = 'form-message success';
+    submitPayment.disabled = true;
+
+    setTimeout(() => {
+      window.location.href = 'index.html';
+    }, 1500);
+  } catch (error) {
+    paymentMessage.textContent = error.message;
+    paymentMessage.className = 'form-message error';
+  }
 });
 
 renderSummary();

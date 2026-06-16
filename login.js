@@ -1,10 +1,9 @@
+import { login } from './client-api.js';
+
 const loginForm = document.getElementById('login-form');
 const loginMessage = document.getElementById('login-message');
 
-const DEMO_EMAIL = 'user@example.com';
-const DEMO_PASSWORD = 'password123';
-
-loginForm.addEventListener('submit', (event) => {
+loginForm.addEventListener('submit', async (event) => {
   event.preventDefault();
 
   const email = loginForm.email.value.trim();
@@ -16,16 +15,15 @@ loginForm.addEventListener('submit', (event) => {
     return;
   }
 
-  if (email === DEMO_EMAIL && password === DEMO_PASSWORD) {
-    localStorage.setItem('shopEaseUser', JSON.stringify({ email }));
+  try {
+    await login(email, password);
     loginMessage.textContent = 'Login successful. Redirecting to home...';
     loginMessage.className = 'form-message success';
-
     setTimeout(() => {
       window.location.href = 'index.html';
     }, 1000);
-  } else {
-    loginMessage.textContent = 'Invalid email or password. Please try again.';
+  } catch (error) {
+    loginMessage.textContent = error.message;
     loginMessage.className = 'form-message error';
   }
 });
