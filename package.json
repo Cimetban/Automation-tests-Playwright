@@ -1,0 +1,12 @@
+{
+  "name": "shopease",
+  "version": "1.0.0",
+  "description": "Simple shopping site tests with Playwright",
+  "scripts": {
+    "test": "npx playwright test",
+    "test:headed": "npx playwright test --headed"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.37.0"
+  }
+}

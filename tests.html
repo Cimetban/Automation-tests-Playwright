@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ShopEase Test Runner</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <main class="page-shell">
+    <section class="auth-panel">
+      <h2>ShopEase Test Runner</h2>
+      <p>Runs login, cart, and payment flow tests in the browser.</p>
+      <div id="test-results"></div>
+    </section>
+  </main>
+
+  <div id="test-frames" style="display:none;">
+    <iframe id="frame-login" src="login.html"></iframe>
+    <iframe id="frame-index" src="index.html"></iframe>
+    <iframe id="frame-payment" src="payment.html"></iframe>
+  </div>
+
+  <script src="tests.js"></script>
+</body>
+</html>

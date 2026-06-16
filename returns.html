@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Returns | ShopEase</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="site-header">
+    <div class="brand">
+      <h1>ShopEase</h1>
+      <p>Hassle-free returns</p>
+    </div>
+    <div class="header-actions">
+      <a href="index.html" class="button button-secondary">Home</a>
+      <a href="login.html" class="button button-secondary">Login</a>
+    </div>
+  </header>
+
+  <main class="page-shell">
+    <section class="auth-panel">
+      <h2>Request a Return</h2>
+      <p>Enter your order details to initiate a return.</p>
+
+      <form id="return-form" class="auth-form" novalidate>
+        <div class="form-group">
+          <label for="orderId">Order ID</label>
+          <input type="text" id="orderId" name="orderId" placeholder="e.g., ORD-12345" required />
+        </div>
+
+        <div class="form-group">
+          <label for="returnReason">Reason for return</label>
+          <select id="returnReason" name="returnReason" required>
+            <option value="">-- Select a reason --</option>
+            <option value="damaged">Item damaged</option>
+            <option value="defective">Item defective</option>
+            <option value="wrong_item">Wrong item received</option>
+            <option value="not_as_described">Not as described</option>
+            <option value="changed_mind">Changed my mind</option>
+            <option value="other">Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="comments">Additional comments</label>
+          <textarea id="comments" name="comments" placeholder="Please describe the issue..." rows="4"></textarea>
+        </div>
+
+        <button type="submit" class="button button-primary">Submit Return Request</button>
+        <p class="form-message" id="return-message"></p>
+      </form>
+    </section>
+
+    <section class="auth-panel" style="margin-top: 2rem;">
+      <h2>Your Return History</h2>
+      <div id="return-history" class="returns-list">
+        <p class="empty-message">No return requests yet.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <p>Built with HTML, CSS, and JavaScript.</p>
+  </footer>
+
+  <script src="returns.js"></script>
+</body>
+</html>
